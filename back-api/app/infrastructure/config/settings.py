@@ -12,18 +12,15 @@ class AppSettings(BaseSettings):
     """Configurações gerais da aplicação"""
     
     model_config = SettingsConfigDict(env_prefix="APP_")
-    
     name: str = Field(default="API Tintas", description="Nome da aplicação")
     version: str = Field(default="1.0.0", description="Versão da aplicação")
     environment: str = Field(default="development", description="Ambiente de execução")
-
 
 class ServerSettings(BaseSettings):
     """Configurações do servidor"""
     model_config = SettingsConfigDict(env_prefix="SERVER_")
     host: str = Field(default="0.0.0.0", description="Host do servidor")
     port: int = Field(default=8000, description="Porta do servidor")
-
 
 class Settings:
     """Classe principal de configurações"""

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.presentation.api.schemas.health_schema import HealthResponse
 from app.infrastructure.services.health_service import get_health_status
 
-router = APIRouter(prefix="/health", tags=["health"])
+router = APIRouter(prefix="/health", tags=["General"])
 
 @router.get("", response_model=HealthResponse)
 def health_check():

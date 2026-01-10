@@ -4,13 +4,15 @@ from pathlib import Path
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+from dotenv import load_dotenv
+load_dotenv()
 
-# Adiciona o diretório raiz ao path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-# Importa Base e settings
 from app.infrastructure.database.connection import Base
 from app.infrastructure.config.settings import settings
+from app.infrastructure.database.models import PaintModel  
+
 config = context.config
 
 if config.config_file_name is not None:
