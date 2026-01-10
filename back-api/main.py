@@ -1,5 +1,8 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
-from app.presentation.api.routes import product_routes
+from app.presentation.api.routes import product_routes, health_routes
 
 app = FastAPI(
     title="API Tintas",
@@ -7,12 +10,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Registra as rotas
 app.include_router(product_routes.router)
+app.include_router(health_routes.router)
 
 @app.get("/")
 def root():
-    """Endpoint raiz da API"""
     return {
         "message": "API Tintas",
         "docs": "/docs"
