@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
-
 class PaintCreateSchema(BaseModel):
     """Schema para criação de tinta"""
     name: str = Field(..., min_length=1, max_length=200, description="Nome da tinta")

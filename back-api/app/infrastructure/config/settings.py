@@ -22,12 +22,20 @@ class ServerSettings(BaseSettings):
     host: str = Field(default="0.0.0.0", description="Host do servidor")
     port: int = Field(default=8000, description="Porta do servidor")
 
+class SecuritySettings(BaseSettings):
+    """Configurações de segurança e autenticação JWT"""
+    model_config = SettingsConfigDict(env_prefix="SECURITY_")
+    secret_key: str = Field(..., min_length=32, description="Chave secreta para JWT (mínimo 32 caracteres)")
+    algorithm: str = Field(default="HS256", description="Algoritmo JWT")
+    access_token_expire_minutes: int = Field(default=30, ge=1, le=1440, description="Tempo de expiração do token em minutos (1-1440)")
+
 class Settings:
     """Classe principal de configurações"""
     def __init__(self):
         self.database = DatabaseSettings()
         self.app = AppSettings()
         self.server = ServerSettings()
+        self.security = SecuritySettings()
     
     @property
     def database_url(self) -> str:

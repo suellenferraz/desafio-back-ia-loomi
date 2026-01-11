@@ -11,7 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.infrastructure.database.connection import Base
 from app.infrastructure.config.settings import settings
-from app.infrastructure.database.models import PaintModel  
+from app.infrastructure.database.models import PaintModel 
+from app.infrastructure.database.models import UserModel  
+from app.infrastructure.database.models import SessionModel  
 
 config = context.config
 
