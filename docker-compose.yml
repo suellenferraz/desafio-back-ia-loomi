@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: pgvector/pgvector:pg15
@@ -61,6 +59,20 @@ services:
       - back-api
     volumes:
       - ./agente-ia:/app
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: tintas_front
+    ports:
+      - "3000:80"
+    depends_on:
+      - back-api
+      - agente-ia
     restart: unless-stopped
     networks:
       - app_network

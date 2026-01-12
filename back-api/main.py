@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.presentation.api.routes import health_routes, paint_routes, account_routes, user_routes
 
 app = FastAPI(
@@ -25,6 +26,15 @@ app = FastAPI(
             "description": "Gerenciamento administrativo de usuários (apenas admin/super_admin)",
         },
     ]
+)
+
+# Configurar CORS para permitir requisições do frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(health_routes.router, prefix="/api/v1")
