@@ -1,15 +1,12 @@
 from typing import Optional
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy.orm import Session
-from app.infrastructure.database.connection import get_db
-from app.infrastructure.repositories.user_repository_impl import UserRepositoryImpl
-from app.infrastructure.repositories.session_repository_impl import SessionRepositoryImpl
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.repositories.session_repository import SessionRepository
 from app.application.use_cases.auth_use_cases import (
     register_user as register_user_uc,
     login_user_with_session,
+    change_password as change_password_uc,
 )
 from app.application.use_cases.session_use_cases import (
     delete_session,
@@ -20,6 +17,7 @@ from app.presentation.api.schemas.auth_schema import (
     UserCreateSchema,
     UserLoginSchema,
     UserResponseSchema,
+    PasswordChangeSchema,
 )
 from app.presentation.api.dependencies.auth_dependencies import (
     get_current_user_optional,
@@ -106,15 +104,35 @@ def login(
             detail=str(e),
         )
 
-@router.get("/me", response_model=UserResponseSchema)
-def get_current_user_info(
-    current_user: UserResponseSchema = Depends(get_current_user_required)
+@router.put("/password", response_model=UserResponseSchema)
+def change_password(
+    password_data: PasswordChangeSchema,
+    current_user: UserResponseSchema = Depends(get_current_user_required),
+    repository: UserRepository = Depends(get_user_repository)
 ):
     """
-    Retorna informações do usuário atual autenticado.
-    Renovação automática de autenticação ao acessar rotas protegidas antes da expiração.
+    Altera a senha do usuário autenticado.
+    
+    Requer senha atual e nova senha.
     """
-    return current_user
+    try:
+        user = change_password_uc(
+            repository=repository,
+            user_id=current_user.id,
+            current_password=password_data.current_password,
+            new_password=password_data.new_password
+        )
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuário não encontrado"
+            )
+        return UserResponseSchema.model_validate(user)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(

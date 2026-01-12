@@ -1,8 +1,5 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from app.infrastructure.database.connection import get_db
-from app.infrastructure.repositories.paint_repository_impl import PaintRepositoryImpl
 from app.domain.repositories.paint_repository import PaintRepository
 from app.application.use_cases.paint_use_cases import (
     create_paint as create_paint_uc,
@@ -16,12 +13,9 @@ from app.presentation.api.schemas.paint_schema import (
     PaintUpdateSchema,
     PaintResponseSchema
 )
+from app.presentation.api.dependencies.auth_dependencies import get_paint_repository
 
 router = APIRouter(prefix="/paints", tags=["Paints"])
-
-def get_paint_repository(db: Session = Depends(get_db)) -> PaintRepository:
-    """Dependency injection para obter repositório de Paint"""
-    return PaintRepositoryImpl(db)
 
 @router.post("", response_model=PaintResponseSchema, status_code=201)
 def create_paint(

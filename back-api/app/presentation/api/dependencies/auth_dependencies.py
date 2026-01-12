@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.user_repository_impl import UserRepositoryImpl
 from app.infrastructure.repositories.session_repository_impl import SessionRepositoryImpl
+from app.infrastructure.repositories.paint_repository_impl import PaintRepositoryImpl
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.repositories.session_repository import SessionRepository
+from app.domain.repositories.paint_repository import PaintRepository
 from app.application.use_cases.auth_use_cases import get_user_by_token
 from app.presentation.api.schemas.auth_schema import UserResponseSchema
 from app.infrastructure.config.settings import settings
@@ -20,6 +22,10 @@ def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
 def get_session_repository(db: Session = Depends(get_db)) -> SessionRepository:
     """Dependency injection para obter repositório de Session"""
     return SessionRepositoryImpl(db)
+
+def get_paint_repository(db: Session = Depends(get_db)) -> PaintRepository:
+    """Dependency injection para obter repositório de Paint"""
+    return PaintRepositoryImpl(db)
 
 def get_current_user_optional(
     request: Request,
