@@ -6,23 +6,26 @@ from app.application.use_cases.paint_use_cases import (
     get_paint_by_id as get_paint_by_id_uc,
     get_all_paints as get_all_paints_uc,
     update_paint as update_paint_uc,
-    delete_paint as delete_paint_uc
+    delete_paint as delete_paint_uc,
+    search_semantic_paints
 )
 from app.presentation.api.schemas.paint_schema import (
     PaintCreateSchema,
     PaintUpdateSchema,
-    PaintResponseSchema
+    PaintResponseSchema,
+    PaintSearchSchema
 )
-from app.presentation.api.dependencies.auth_dependencies import get_paint_repository
+from app.presentation.api.dependencies.auth_dependencies import get_paint_repository, get_embedding_service
 
 router = APIRouter(prefix="/paints", tags=["Paints"])
 
 @router.post("", response_model=PaintResponseSchema, status_code=201)
 def create_paint(
     paint_data: PaintCreateSchema,
-    repository: PaintRepository = Depends(get_paint_repository)
+    repository: PaintRepository = Depends(get_paint_repository),
+    embedding_service = Depends(get_embedding_service)
 ):
-    """Cria uma nova tinta"""
+    """Cria uma nova tinta e gera embedding automaticamente"""
     try:
         paint = create_paint_uc(
             repository=repository,
@@ -32,7 +35,8 @@ def create_paint(
             environment=paint_data.environment,
             finish_type=paint_data.finish_type,
             features=paint_data.features,
-            line=paint_data.line
+            line=paint_data.line,
+            embedding_service=embedding_service
         )
         return PaintResponseSchema.model_validate(paint)
     except ValueError as e:
@@ -74,9 +78,10 @@ def get_all_paints(
 def update_paint(
     paint_id: int,
     paint_data: PaintUpdateSchema,
-    repository: PaintRepository = Depends(get_paint_repository)
+    repository: PaintRepository = Depends(get_paint_repository),
+    embedding_service = Depends(get_embedding_service)
 ):
-    """Atualiza uma tinta existente"""
+    """Atualiza uma tinta existente e regenera embedding automaticamente"""
     # Busca a tinta existente para pegar os valores atuais
     existing_paint = get_paint_by_id_uc(repository=repository, paint_id=paint_id)
     if not existing_paint:
@@ -92,7 +97,8 @@ def update_paint(
         environment=paint_data.environment or existing_paint.environment,
         finish_type=paint_data.finish_type or existing_paint.finish_type,
         features=paint_data.features if paint_data.features is not None else existing_paint.features,
-        line=paint_data.line or existing_paint.line
+        line=paint_data.line or existing_paint.line,
+        embedding_service=embedding_service
     )
     
     if not updated_paint:
@@ -111,3 +117,21 @@ def delete_paint(
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Tinta com ID {paint_id} não encontrada")
     return None
+
+
+@router.post("/search", response_model=List[PaintResponseSchema])
+def search_paints_semantic(
+    search_data: PaintSearchSchema,
+    repository: PaintRepository = Depends(get_paint_repository)
+):
+    """Busca semântica de tintas usando embeddings (RAG)"""
+    try:
+        paints = search_semantic_paints(
+            repository=repository,
+            query_embedding=search_data.embedding,
+            top_k=search_data.top_k,
+            environment=search_data.environment
+        )
+        return [PaintResponseSchema.model_validate(paint) for paint in paints]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro na busca semântica: {str(e)}")

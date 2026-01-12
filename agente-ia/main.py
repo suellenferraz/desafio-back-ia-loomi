@@ -7,6 +7,10 @@ setup_logging()
 
 from fastapi import FastAPI
 from app.presentation.api.routes import chat_routes, health_routes
+from app.infrastructure.database.connection import Base, engine
+
+# Criar tabelas no startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Agente IA - Tintas Suvinil",

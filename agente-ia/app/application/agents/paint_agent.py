@@ -1,11 +1,12 @@
 from typing import List, Dict, Optional
 import time
 from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
 from app.application.services.api_client import APIClient
 from app.application.tools.paint_search_tool import create_paint_search_tool
 from app.application.tools.visual_generation_tool import create_visual_generation_tool
-from app.infrastructure.llm.openai_client import OpenAIClient
-from app.application.services.embedding_service import EmbeddingService
+from app.domain.services.llm_client import ILLMClient
+from app.infrastructure.services.embedding_service import EmbeddingService
 from app.infrastructure.llm.prompt_templates.paint_prompt import SYSTEM_PROMPT
 from app.infrastructure.logging.logger import get_logger
 
@@ -15,13 +16,13 @@ logger = get_logger(__name__)
 class PaintAgent:
     def __init__(
         self,
-        openai_client: OpenAIClient,
+        llm_client: ILLMClient,
         api_client: APIClient,
         embedding_service: EmbeddingService,
         model: str = "gpt-4o-mini",
         temperature: float = 0.7
     ):
-        self.openai_client = openai_client
+        self.llm_client = llm_client
         self.api_client = api_client
         self.embedding_service = embedding_service
         self.model = model
@@ -30,20 +31,26 @@ class PaintAgent:
         logger.info("paint_agent_initialized", model=model, temperature=temperature)
 
     def _create_agent(self):
-        logger.debug("creating_agent", model=self.model)
+        logger.debug("creating_agent", model=self.model, temperature=self.temperature)
         tools = [
             create_paint_search_tool(
                 self.api_client,
                 self.embedding_service
             ),
-            create_visual_generation_tool(self.openai_client)
+            create_visual_generation_tool(self.llm_client)
         ]
         
-        agent = create_agent(
-            model=f"openai:{self.model}",
-            tools=tools,
-            prompt=SYSTEM_PROMPT,
+        # Criar modelo com temperature configurado
+        llm = ChatOpenAI(
+            model=self.model,
             temperature=self.temperature
+        )
+        
+        # create_agent não aceita temperature diretamente, usar modelo configurado
+        agent = create_agent(
+            model=llm,
+            tools=tools,
+            system_prompt=SYSTEM_PROMPT
         )
         
         logger.debug("agent_created", tools_count=len(tools))

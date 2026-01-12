@@ -3,7 +3,7 @@ from typing import Optional
 import json
 import time
 from app.application.services.api_client import APIClient
-from app.application.services.embedding_service import EmbeddingService
+from app.infrastructure.services.embedding_service import EmbeddingService
 from app.infrastructure.logging.logger import get_logger
 
 logger = get_logger(__name__)

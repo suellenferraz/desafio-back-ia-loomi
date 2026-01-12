@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ARRAY, DateTime, CheckConstraint
 from sqlalchemy.sql import func
+from pgvector.sqlalchemy import Vector
 from app.infrastructure.database.connection import Base
 
 class PaintModel(Base):
@@ -18,6 +19,7 @@ class PaintModel(Base):
     finish_type = Column(String(50), nullable=False)
     features = Column(ARRAY(String), nullable=False, default=list)
     line = Column(String(50), nullable=False, index=True)
+    embedding = Column(Vector(1536), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     

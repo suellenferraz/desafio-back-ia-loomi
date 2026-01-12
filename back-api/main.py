@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI
-from app.presentation.api.routes import product_routes, health_routes, paint_routes, account_routes, user_routes
+from app.presentation.api.routes import health_routes, paint_routes, account_routes, user_routes
 
 app = FastAPI(
     title="API Tintas",
@@ -11,10 +11,6 @@ app = FastAPI(
         {
             "name": "General",
             "description": "Endpoints gerais da aplicação",
-        },
-        {
-            "name": "Products",
-            "description": "Exemplo de endpoint de produtos",
         },
         {
             "name": "Paints",
@@ -32,7 +28,6 @@ app = FastAPI(
 )
 
 app.include_router(health_routes.router, prefix="/api/v1")
-app.include_router(product_routes.router, prefix="/api/v1")
 app.include_router(paint_routes.router, prefix="/api/v1")
 app.include_router(account_routes.router, prefix="/api/v1")
 app.include_router(user_routes.router, prefix="/api/v1") 

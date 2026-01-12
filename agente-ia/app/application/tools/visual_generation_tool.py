@@ -1,12 +1,12 @@
 from langchain.tools import tool
 import time
-from app.infrastructure.llm.openai_client import OpenAIClient
+from app.domain.services.llm_client import ILLMClient
 from app.infrastructure.logging.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-def create_visual_generation_tool(openai_client: OpenAIClient):
+def create_visual_generation_tool(llm_client: ILLMClient):
     @tool
     async def visual_generation_tool(
         description: str,
@@ -46,7 +46,7 @@ def create_visual_generation_tool(openai_client: OpenAIClient):
                 prompt = f"Modern {room_term} with {clean_color} walls, interior design photo, professional lighting"
             
             logger.debug("dalle_prompt_created", prompt=prompt)
-            image_url = await openai_client.generate_image(prompt)
+            image_url = await llm_client.generate_image(prompt)
             
             elapsed_time = time.time() - start_time
             logger.info(

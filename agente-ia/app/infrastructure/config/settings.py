@@ -15,9 +15,19 @@ class APISettings(BaseSettings):
     base_url: str = Field(default="http://localhost:8000", description="URL base da API back-api")
 
 
+class DatabaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="DB_")
+    url: str = Field(..., description="URL de conexão do PostgreSQL")
+
+
 class Settings:
     def __init__(self):
         self.openai = OpenAISettings()
         self.api = APISettings()
+        self.database = DatabaseSettings()
+    
+    @property
+    def database_url(self) -> str:
+        return self.database.url
 
 settings = Settings()

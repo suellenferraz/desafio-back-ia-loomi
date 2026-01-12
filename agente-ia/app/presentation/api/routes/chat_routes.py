@@ -1,20 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 import time
 from app.presentation.api.schemas.chat_schema import ChatRequestSchema, ChatResponseSchema
-from app.presentation.api.dependencies.agent_dependencies import get_paint_agent
+from app.presentation.api.dependencies.agent_dependencies import get_paint_agent, get_conversation_repository
 from app.application.agents.paint_agent import PaintAgent
 from app.domain.repositories.conversation_repository import ConversationRepository
-from app.infrastructure.repositories.conversation_repository_impl import ConversationRepositoryImpl
 from app.domain.entities.conversation import Conversation
 from app.infrastructure.logging.logger import get_logger
 from uuid import UUID
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/chat", tags=["Chat"])
-
-
-def get_conversation_repository() -> ConversationRepository:
-    return ConversationRepositoryImpl()
 
 
 def validate_user_input(message: str) -> bool:

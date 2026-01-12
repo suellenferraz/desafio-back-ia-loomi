@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: tintas_db
     environment:
       POSTGRES_USER: postgres
@@ -25,7 +25,7 @@ services:
       context: ./back-api
       dockerfile: Dockerfile
     container_name: tintas_api
-    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+    command: sh -c "alembic upgrade head && DB_URL='postgresql://postgres:postgres@db:5432/postgres?options=-c timezone=UTC' alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     environment:
@@ -33,11 +33,34 @@ services:
       SECURITY_SECRET_KEY: sua_chave_secreta_minimo_32_caracteres_12345678901234567890
       SECURITY_ALGORITHM: HS256
       SECURITY_ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./back-api:/app
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  agente-ia:
+    build:
+      context: ./agente-ia
+      dockerfile: Dockerfile
+    container_name: tintas_agente_ia
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: gpt-4o-mini
+      OPENAI_EMBEDDING_MODEL: text-embedding-3-small
+      API_BASE_URL: http://back-api:8000
+      DB_URL: postgresql://postgres:postgres@db:5432/tintas_db?options=-c timezone=UTC
+    depends_on:
+      - back-api
+    volumes:
+      - ./agente-ia:/app
     restart: unless-stopped
     networks:
       - app_network

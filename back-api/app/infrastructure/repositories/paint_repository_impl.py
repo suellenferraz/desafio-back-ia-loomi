@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.domain.entities.paint import Paint
 from app.domain.repositories.paint_repository import PaintRepository
 from app.infrastructure.database.models.paint_model import PaintModel
@@ -80,6 +81,83 @@ class PaintRepositoryImpl(PaintRepository):
             return False
         
         self.db.delete(paint_model)
+        self.db.commit()
+        return True
+    
+    def search_semantic(
+        self,
+        query_embedding: List[float],
+        top_k: int = 5,
+        environment: Optional[str] = None
+    ) -> List[Paint]:
+        """Busca semântica usando embeddings (pgvector)"""
+        if not query_embedding:
+            return []
+        
+        # Validar embedding (deve ser lista de floats)
+        if not isinstance(query_embedding, list) or not all(isinstance(x, (int, float)) for x in query_embedding):
+            raise ValueError("query_embedding deve ser uma lista de números")
+        
+        # Converter embedding para formato array do PostgreSQL
+        # Usar cast explícito para garantir segurança
+        embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
+        
+        # Validar que embedding_str contém apenas números e caracteres seguros
+        if not all(c.isdigit() or c in '[],.-+eE ' for c in embedding_str):
+            raise ValueError("Embedding contém caracteres inválidos")
+        
+        # Construir query SQL para busca semântica com pgvector
+        # Usar bindparam para todos os valores, exceto o embedding que precisa ser castado
+        sql = """
+            SELECT 
+                id, name, color, surface_type, environment, 
+                finish_type, features, line, created_at, updated_at
+            FROM paints
+            WHERE embedding IS NOT NULL
+        """
+        
+        params = {}
+        
+        if environment:
+            sql += " AND environment = :environment"
+            params["environment"] = environment
+        
+        # Usar f-string apenas após validação (pgvector requer sintaxe específica)
+        sql += f"""
+            ORDER BY embedding <=> '{embedding_str}'::vector
+            LIMIT :top_k
+        """
+        params["top_k"] = top_k
+        
+        result = self.db.execute(text(sql), params)
+        rows = result.fetchall()
+        
+        # Converter rows para Paint entities
+        paints = []
+        for row in rows:
+            paint_model = PaintModel(
+                id=row.id,
+                name=row.name,
+                color=row.color,
+                surface_type=row.surface_type,
+                environment=row.environment,
+                finish_type=row.finish_type,
+                features=row.features,
+                line=row.line,
+                created_at=row.created_at,
+                updated_at=row.updated_at
+            )
+            paints.append(self._model_to_entity(paint_model))
+        
+        return paints
+    
+    def update_embedding(self, paint_id: int, embedding: List[float]) -> bool:
+        """Atualiza o embedding de uma tinta"""
+        paint_model = self.db.query(PaintModel).filter(PaintModel.id == paint_id).first()
+        if not paint_model:
+            return False
+        
+        paint_model.embedding = embedding
         self.db.commit()
         return True
     

@@ -12,6 +12,7 @@ from app.domain.repositories.paint_repository import PaintRepository
 from app.application.use_cases.auth_use_cases import get_user_by_token
 from app.presentation.api.schemas.auth_schema import UserResponseSchema
 from app.infrastructure.config.settings import settings
+from app.infrastructure.services.embedding_service import EmbeddingService
 
 security = HTTPBearer(auto_error=False)
 
@@ -26,6 +27,15 @@ def get_session_repository(db: Session = Depends(get_db)) -> SessionRepository:
 def get_paint_repository(db: Session = Depends(get_db)) -> PaintRepository:
     """Dependency injection para obter repositório de Paint"""
     return PaintRepositoryImpl(db)
+
+def get_embedding_service() -> EmbeddingService:
+    """Dependency injection para obter serviço de embeddings"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "OPENAI_API_KEY não configurada. Configure a variável de ambiente OPENAI_API_KEY."
+        )
+    return EmbeddingService(api_key=api_key)
 
 def get_current_user_optional(
     request: Request,

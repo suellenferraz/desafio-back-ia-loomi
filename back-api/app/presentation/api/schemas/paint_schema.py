@@ -64,3 +64,24 @@ class PaintResponseSchema(BaseModel):
     line: str
     created_at: datetime
     updated_at: datetime
+
+class PaintSearchSchema(BaseModel):
+    """Schema para busca semântica de tintas"""
+    embedding: List[float] = Field(..., description="Embedding da query (vetor de floats)")
+    top_k: int = Field(5, ge=1, le=50, description="Número de resultados desejados")
+    environment: Optional[str] = Field(None, description="Filtrar por ambiente: 'interno' ou 'externo'")
+    
+    @field_validator('environment')
+    @classmethod
+    def validate_environment(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ["interno", "externo"]:
+            raise ValueError("Environment deve ser 'interno' ou 'externo'")
+        return v
+    
+    model_config = {"json_schema_extra": {
+        "example": {
+            "embedding": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "top_k": 5,
+            "environment": "interno"
+        }
+    }}

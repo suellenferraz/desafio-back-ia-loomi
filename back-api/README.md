@@ -7,8 +7,7 @@ back-api/
 │   │   ├── entities/            # Entidades de domínio puras
 │   │   │   ├── paint.py        # Entidade Paint (Tinta)
 │   │   │   ├── user.py         # Entidade User (Usuário)
-│   │   │   ├── session.py      # Entidade Session (Sessão)
-│   │   │   └── product.py      # Entidade Product (exemplo/legado)
+│   │   │   └── session.py      # Entidade Session (Sessão)
 │   │   └── repositories/       # Interfaces de repositórios (ABC)
 │   │       ├── paint_repository.py
 │   │       ├── user_repository.py
@@ -18,8 +17,7 @@ back-api/
 │   │   └── use_cases/          # Lógica de negócio isolada
 │   │       ├── paint_use_cases.py
 │   │       ├── auth_use_cases.py
-│   │       ├── session_use_cases.py
-│   │       └── product_use_cases.py
+│   │       └── session_use_cases.py
 │   │
 │   ├── infrastructure/          # Camada de Infraestrutura (detalhes técnicos)
 │   │   ├── database/           # SQLAlchemy
@@ -44,13 +42,11 @@ back-api/
 │           │   ├── paint_routes.py    # CRUD Tintas
 │           │   ├── account_routes.py  # Auth (signup, login, logout)
 │           │   ├── user_routes.py     # Admin Users
-│           │   ├── health_routes.py   # Health check
-│           │   └── product_routes.py   # Exemplo (legado)
+│           │   └── health_routes.py   # Health check
 │           ├── schemas/         # Schemas Pydantic
 │           │   ├── paint_schema.py
 │           │   ├── auth_schema.py
-│           │   ├── health_schema.py
-│           │   └── product_schema.py
+│           │   └── health_schema.py
 │           └── dependencies/   # Dependency Injection
 │               └── auth_dependencies.py
 │

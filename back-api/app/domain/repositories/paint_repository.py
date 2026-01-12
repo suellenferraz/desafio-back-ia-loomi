@@ -35,3 +35,18 @@ class PaintRepository(ABC):
     def delete(self, paint_id: int) -> bool:
         """Deleta uma tinta"""
         pass
+    
+    @abstractmethod
+    def search_semantic(
+        self,
+        query_embedding: List[float],
+        top_k: int = 5,
+        environment: Optional[str] = None
+    ) -> List[Paint]:
+        """Busca semântica usando embeddings (pgvector)"""
+        pass
+    
+    @abstractmethod
+    def update_embedding(self, paint_id: int, embedding: List[float]) -> bool:
+        """Atualiza o embedding de uma tinta"""
+        pass
