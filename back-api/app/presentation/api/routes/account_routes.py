@@ -57,7 +57,7 @@ def signup(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-@router.post("/login", response_model=UserResponseSchema)
+@router.post("/login")
 def login(
     login_data: UserLoginSchema,
     request: Request,
@@ -97,7 +97,14 @@ def login(
             path="/"
         )
         
-        return UserResponseSchema.model_validate(user)
+        # Retornar usuário com token para o frontend poder usar
+        user_data = UserResponseSchema.model_validate(user)
+        # Adicionar token ao response (também disponível via cookie)
+        from app.presentation.api.schemas.auth_schema import TokenSchema
+        return {
+            "user": user_data.model_dump(),
+            "token": access_token
+        }
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
